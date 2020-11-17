@@ -1,0 +1,6 @@
+my_hand/0.jpg
+my_hand/1.jpg
+my_hand/2.jpg
+my_hand/3.jpg
+my_hand/4.jpg
+my_hand/5.jpg
