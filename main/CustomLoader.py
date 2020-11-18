@@ -44,6 +44,20 @@ class CustomLoader():
         img = img.astype(np.float32)
         return img.reshape(3, cfg.input_img_shape[0], cfg.input_img_shape[1])
 
+    def process_frame(self, image):
+        img = cv2.resize(img, (256,256), interpolation = cv2.INTER_AREA)
+        
+        if not isinstance(img, np.ndarray):
+            raise IOError("Fail to read %s" % path)
+
+        if order=='RGB':
+            img = img[:,:,::-1].copy()
+        
+        img = img.astype(np.float32)
+        img = self.transform(img.astype(np.float32))/255.
+
+        return img
+
     def get_batch_from_txt_files(self):
         batch = np.empty(shape=(self.batch_size, 3, 256, 256))
         bboxs = []

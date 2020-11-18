@@ -19,6 +19,9 @@ from utils.transforms import flip
 import torchvision.transforms as transforms
 from CustomLoader import CustomLoader
 
+from utils.preprocessing import augmentation
+from hand_detector.detect_custom import YOLO_AKASH
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, dest='gpu_ids')
@@ -118,6 +121,65 @@ def custom_main():
             preds = {k: np.concatenate(v) for k,v in preds.items()}
             test_loader.visualize(preds, filename, img_path, inv_trans)
 
+    def run_webcam():
+        args = parse_args()
+        cfg.set_args(args.gpu_ids)
+        cudnn.benchmark = True
+        
+        if cfg.dataset == 'InterHand2.6M':
+            assert args.test_set, 'Test set is required. Select one of test/val'
+            assert args.annot_subset, "Please set proper annotation subset. Select one of all, human_annot, machine_annot"
+        else:
+            args.test_set = 'test'
+            args.annot_subset = 'all'
+        
+        tester = Tester(args.test_epoch)
+        tester._make_batch_generator(args.test_set, args.annot_subset)
+        tester._make_model()
+
+        detector = YOLO_AKASH("best.pt", save_img=True)
+
+        test_loader = CustomLoader(transforms.ToTensor(), 'my_hand', 1)
+
+        cap = cv2.VideoCapture(0)
+
+        with torch.no_grad():
+            while (True):
+                ret, frame = cap.read()
+                
+                inputs={}
+                preds = {'joint_coord': [], 'rel_root_depth': [], 'hand_type': []}
+                img = test_loader.process_frame(frame)
+                inputs['img'] = torch.reshape(img, (1, 3, 256, 256))
+
+                boxes, confs, labels = detector.detect_image(img)
+
+                img, inv_trans = augmentation(img, np.array(bbox), None, None, None, 'test', None)
+
+                # forward
+                out = tester.model(inputs)
+
+                joint_coord_out = out['joint_coord'].cpu().numpy()
+                rel_root_depth_out = out['rel_root_depth'].cpu().numpy()
+                hand_type_out = out['hand_type'].cpu().numpy()
+
+                preds['joint_coord'].append(joint_coord_out)
+                preds['rel_root_depth'].append(rel_root_depth_out)
+                preds['hand_type'].append(hand_type_out)
+                
+                # evaluate
+                preds = {k: np.concatenate(v) for k,v in preds.items()}
+                
+                ##Changes need to be done from here onwards !!!!!!!!!!!!!!!!!!!!!!!!
+                keypoint_frame = test_loader.visualize(preds, filename, img_path, inv_trans)
+
+                cv2.imshow('webcam', keypoint_frame)
+
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+            
+            cap.release()
+            cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     custom_main()
