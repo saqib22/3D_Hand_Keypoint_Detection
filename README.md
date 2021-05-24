@@ -1,4 +1,6 @@
 
+# Modified the InterHand2.6M for 3D hand detection on custom images for pose estimation
+
 # InterHand2.6M: A Dataset and Baseline for 3D Interacting Hand Pose Estimation from a Single RGB Image
 
 ## Introduction
