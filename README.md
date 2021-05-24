@@ -1,7 +1,5 @@
 
-# Modified the InterHand2.6M for 3D hand detection on custom images for pose estimation
-
-# InterHand2.6M: A Dataset and Baseline for 3D Interacting Hand Pose Estimation from a Single RGB Image
+# Modified the InterHand2.6M for 3D hand detection on custom images for pose estimation using a Single RGB Image
 
 ## Introduction
 * This repo is official **[PyTorch](https://pytorch.org)** implementation of **[InterHand2.6M: A Dataset and Baseline for 3D Interacting Hand Pose Estimation from a Single RGB Image (ECCV 2020)](https://arxiv.org/abs/2008.09309)**. 
